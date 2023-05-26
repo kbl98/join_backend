@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Letters,Task
 from .models import User,Subtask
-from .models import Contact
+from .models import Contact,users
 
 
 class LettersSerializer(serializers.ModelSerializer):
@@ -11,19 +11,26 @@ class LettersSerializer(serializers.ModelSerializer):
 
 class UsernameSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ('username',)
+        model = users
+        fields = ('name','phone','email','color',)
 
 
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
-        fields = ('username','phone','email','color',)
+        fields = ('name','phone','email','color',)
+
+class SubtaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subtask
+        fields = ('title',)
+
 
 class TaskSerializer(serializers.ModelSerializer):
      letters=LettersSerializer(many=True)
      contactNames=UsernameSerializer(many=True)
+     subtask=SubtaskSerializer(many=True)
      class Meta:
         model = Task
-        fields = ('title','description','date','prio','created_at','category','progress','contactNames','letters',)
+        fields = ('title','description','date','prio','created_at','category','progress','contactNames','letters','subtask')
 
