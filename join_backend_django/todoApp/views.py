@@ -15,8 +15,26 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import permissions
+from rest_framework.generics import CreateAPIView
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.db import models
+from django.contrib.auth.models import (
+    BaseUserManager, AbstractBaseUser
+)
+from .serializers import UserSerializer
 
 # Create your views here.
+class UserRegistrationView(APIView):
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            newCommonUser=users.objects.create(name=request.data['username'],email=request.data['email'])
+            newCommonUser.save()
+            return Response({'message': 'Benutzer erfolgreich registriert.'})
+        return Response(serializer.errors, status=400)
+
 class TaskView(APIView):
     """
     View to list all tasks in the system.
@@ -24,11 +42,9 @@ class TaskView(APIView):
     * Requires token authentication.
     * Only admin users are able to access this view.
     """
-    """authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAdminUser]"""
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAdminUser]
+    
     def get(self, request, format=None):
         """
         Return a list of all tasks.
@@ -112,10 +128,9 @@ class ContactView(APIView):
     * Requires token authentication.
     * Only admin users are able to access this view.
     """
-    """authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAdminUser]"""
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAdminUser]
+   
 
     def get(self, request, format=None):
         """
@@ -176,8 +191,8 @@ class UsersView(APIView):
     * Requires token authentication.
     * Only admin users are able to access this view.
     """
-    """authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAdminUser]"""
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAdminUser]
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 

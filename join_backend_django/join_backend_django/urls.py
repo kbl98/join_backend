@@ -19,6 +19,7 @@ from todoApp.views import loginView,TaskView
 from todoApp.views import TaskDetailView
 from todoApp.views import ContactView,ContactDetailView
 from todoApp.views import UsersView,UsersDetailView
+from todoApp.views import UserRegistrationView
 from rest_framework.urlpatterns import format_suffix_patterns
 
 
@@ -30,7 +31,8 @@ urlpatterns = [
     path('contacts/', ContactView.as_view()),
     path('contacts/<int:pk>/', ContactDetailView.as_view()),
     path('users/', UsersView.as_view()),
-    path('users/<int:pk>/', UsersDetailView.as_view())
+    path('users/<int:pk>/', UsersDetailView.as_view()),
+    path('register/', UserRegistrationView.as_view())
 
 
 ]

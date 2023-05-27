@@ -2,6 +2,23 @@ from rest_framework import serializers
 from .models import Letters,Task
 from .models import User,Subtask
 from .models import Contact,users
+ # If used custom user model
+
+
+
+
+class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'password', 'email')
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
+
+    
 
 
 class LettersSerializer(serializers.ModelSerializer):
