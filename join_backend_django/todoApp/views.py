@@ -27,14 +27,13 @@ from .serializers import UserSerializer
 # Create your views here.
 class UserRegistrationView(APIView):
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            newCommonUser=users.objects.create(name=request.data['username'],email=request.data['email'])
-            newCommonUser.save()
-            return Response({'message': 'Benutzer erfolgreich registriert.'})
-        return Response(serializer.errors, status=400)
-
+        data=request.data
+        user=User.objects.create_user(username=data['username'],email=data['email'],password=data['password'])
+        user.save()
+        newCommonUser=users.objects.create(name=request.data['username'],email=request.data['email'])
+        newCommonUser.save()
+        return Response({'message': 'Benutzer erfolgreich registriert.'})
+        
 class TaskView(APIView):
     """
     View to list all tasks in the system.
