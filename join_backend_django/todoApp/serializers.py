@@ -4,6 +4,24 @@ from .models import User,Subtask
 from .models import Contact,users
  # If used custom user model
 
+class CustomAuthTokenSerializer(serializers.Serializer):
+    username = serializers.CharField(required=False)  
+    password = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        if username is None and password is None:
+            raise serializers.ValidationError('Please provide either a username or password.')
+
+        return attrs
+    
+class LoginSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+            model = User
+            fields = ['email','password']
 
 
 
@@ -12,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'email')
+        fields = ('password', 'email','id')
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)

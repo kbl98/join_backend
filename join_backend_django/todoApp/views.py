@@ -7,8 +7,8 @@ from .models import Task,Letters
 from .models import Contact,Subtask
 from .models import users
 from .serializers import TaskSerializer,ContactSerializer
-from .serializers import UsernameSerializer
-
+from .serializers import UsernameSerializer,LoginSerializer
+from django.http import JsonResponse
 from django.http import Http404
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -19,6 +19,7 @@ from rest_framework import permissions
 from rest_framework.generics import CreateAPIView
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
 )
@@ -28,12 +29,25 @@ from .serializers import UserSerializer
 class UserRegistrationView(APIView):
     def post(self, request):
         data=request.data
-        user=User.objects.create_user(username=data['username'],email=data['email'],password=data['password'])
-        user.save()
-        newCommonUser=users.objects.create(name=request.data['username'],email=request.data['email'])
-        newCommonUser.save()
-        return Response({'message': 'Benutzer erfolgreich registriert.'})
-        
+        email=data['email']
+        username=data['email']
+    
+        if not self.username_exists(username,email):
+            user=User.objects.create_user(username=data['email'],email=data['email'],password=data['password'])
+            user.is_staff = True
+            user.save()
+            newCommonUser=users.objects.create(name=request.data['username'],email=request.data['email'],color=request.data['color'])
+            newCommonUser.save()
+            serializer=UsernameSerializer(newCommonUser)
+            return JsonResponse(serializer.data)
+        return JsonResponse({'Message':'User already exists'})
+
+    def username_exists(self,username,email):
+        if User.objects.filter(username=username).exists():
+            return True
+        if User.objects.filter(email=email).exists():
+            return True
+        return False    
 class TaskView(APIView):
     """
     View to list all tasks in the system.
@@ -42,7 +56,7 @@ class TaskView(APIView):
     * Only admin users are able to access this view.
     """
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAdminUser]
+   
     
     def get(self, request, format=None):
         """
@@ -108,17 +122,25 @@ class TaskDetailView(APIView):
        
         
 class loginView(ObtainAuthToken):
-     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        token, created = Token.objects.get_or_create(user=user)
-        return Response({
-            'token': token.key,
-            'user_id': user.pk,
-            'email': user.email
-        })
+
+    def post(self, request, *args, **kwargs):
+        data=request.data
+        print(data['password'])
+        user = authenticate(username=data.get('email'), password=data.get('password'))
+        if user is not None:
+            user = User.objects.get(email=request.data['email'])
+            userForColor = users.objects.get(email=request.data['email'])
+            token, created = Token.objects.get_or_create(user=user)
+            print(token)
+            return Response({
+                'token': token.key,
+                'email': user.email,
+                'id':user.id,
+                'username':userForColor.name,
+                'color':userForColor.color
+            })
+        else:
+            return Response({'message':'Not User'})
 
 class ContactView(APIView):
     """
