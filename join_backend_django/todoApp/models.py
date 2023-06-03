@@ -27,8 +27,19 @@ PROGRESS_CHOICES=(
     ('awaiting Feedback','awaiting Feedback')
 )
 
+PROGRESS_SUBTASK_CHOICE=(
+    ('todo','todo'),
+    ('done','done')
+)
+
+DATE_INPUT_FORMATS = ('%d/%m/%Y')
+
 def return_date_time():
     now = timezone.now()
+    date=now + timedelta(days=7)
+    newdate="{:%d/%m/%Y}".format(date)
+    
+    return newdate
     return now + timedelta(days=7)
 
 class users(models.Model):
@@ -48,9 +59,10 @@ class Letters(models.Model):
         return "{}:{}..".format(self.id, self.bothLetters)
 
 class Subtask(models.Model):
-    title = models.CharField(max_length=100,null=True,blank=True)
+    name = models.CharField(max_length=100,null=True,blank=True)
+    state=models.CharField(max_length=6, choices=PROGRESS_SUBTASK_CHOICE,default='todo')
     def __str__(self):
-        return "{}:{}..".format(self.id, self.title)
+        return "{}:{}..".format(self.id, self.name,self.state)
     
 
 
@@ -58,13 +70,14 @@ class Task(models.Model):
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=500)
     prio=models.CharField(max_length=6, choices=PRIO_CHOICES, default='medium')
-    date=models.DateField(default=return_date_time)
-    created_at = models.DateField(default=datetime.today)
+    date=models.CharField(max_length=12,default=return_date_time)
+    created_at = models.DateTimeField(default=datetime.today)
     category = models.CharField(max_length=100)
     progress = models.CharField(max_length=20,choices=PROGRESS_CHOICES, default='todo')
     contactNames=models.ManyToManyField(users)
     letters=models.ManyToManyField(Letters,default='', blank=True,null=True )
-    subtask=models.ForeignKey(Subtask, on_delete=models.CASCADE,blank=True,null=True)
+    subtasks=models.ManyToManyField(Subtask,default='', blank=True,null=True)
+    color=models.CharField(max_length=7, default="#ffffff")
     
 class Contact(models.Model):
     name=models.CharField(max_length=100)

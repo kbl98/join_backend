@@ -8,6 +8,7 @@ from .models import Contact,Subtask
 from .models import users
 from .serializers import TaskSerializer,ContactSerializer
 from .serializers import UsernameSerializer,LoginSerializer
+from .serializers import SubtaskSerializer,ContactnameSerializer
 from django.http import JsonResponse
 from django.http import Http404
 from rest_framework import status
@@ -38,6 +39,8 @@ class UserRegistrationView(APIView):
             user.save()
             newCommonUser=users.objects.create(name=request.data['username'],email=request.data['email'],color=request.data['color'])
             newCommonUser.save()
+            newContact=Contact.objects.create(name=request.data['username'],email=request.data['email'],color=request.data['color'])
+            newContact.save()
             serializer=UsernameSerializer(newCommonUser)
             return JsonResponse(serializer.data)
         return JsonResponse({'Message':'User already exists'})
@@ -70,19 +73,23 @@ class TaskView(APIView):
     
     def post(self, request, format=None):
         data=request.data
+        print(data['date'])
         newTask = Task.objects.create(
-            title=data['title'],description=data['description'],prio=data['prio'],date=data['date'],created_at=data['created_at'],category=data['category'],progress=data['progress'])
-       
+            title=data['title'],description=data['description'],prio=data['prio'],date=data['date'],category=data['category'],progress=data['progress'],color=data['color'])
+        print('nextStep')
         for contact in data['contactNames']:
-            print(newTask.title)
-            newCont=users.objects.get(name=contact['username'])
+            newCont=users.objects.get(name=contact['name'])
             
             newTask.contactNames.add(newCont)
-
-        for letter in data['letters']:
-            newLett=Letters.objects.create(bothLetters=letter['bothLetters'],color=letter['color'])
+        """if data['letters']:
+            for letter in data['letters']:
+                newLett=Letters.objects.create(bothLetters=letter['bothLetters'],color=letter['color'])
             
-            newTask.letters.add(newLett)
+                newTask.letters.add(newLett)"""
+        
+        for subtask in data['subtasks']:
+            newSubt=Subtask.objects.create(name=subtask['name'])
+            newTask.subtasks.add(newSubt)
 
         newTask.save()
     
@@ -91,7 +98,6 @@ class TaskView(APIView):
     
 class TaskDetailView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
         oneTask = Task.objects.get(pk=pk)
@@ -99,12 +105,27 @@ class TaskDetailView(APIView):
         return Response(serializer.data)
     
     def patch(self,request, pk,format=None):
+        if 'subtasks'in request.data and request.data['subtasks']!=[]:
+            for subtask in request.data['subtasks']:
+                subtaskobj=Subtask.objects.get(id=subtask['id'])
+                subtaskobj.state=subtask['state']
+                subtaskobj.save()
+
         try:
             oneTask = Task.objects.get(pk=pk)
         except Task.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-
         
+        if 'contactNames' in request.data and request.data['contactNames']!=[]:
+            oneTask.contactNames.clear()
+            contactNames=[]
+            for contact in request.data['contactNames']:
+                user=users.objects.get(name=contact['name'])
+                contactNames.append(user)
+                print(contactNames)
+                oneTask.contactNames.set(contactNames)
+        
+    
         serializer = TaskSerializer(oneTask, data=request.data,partial=True)
         if serializer.is_valid():
                 serializer.save()

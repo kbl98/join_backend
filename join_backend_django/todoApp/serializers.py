@@ -49,6 +49,10 @@ class UsernameSerializer(serializers.ModelSerializer):
         model = users
         fields = ('name','phone','email','color',)
 
+class ContactnameSerializer(serializers.ModelSerializer):
+     class Meta:
+        model = users
+        fields = ('name')
 
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
@@ -58,14 +62,17 @@ class ContactSerializer(serializers.ModelSerializer):
 class SubtaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subtask
-        fields = ('title',)
+        fields = ('name','state','id')
 
 
 class TaskSerializer(serializers.ModelSerializer):
-     letters=LettersSerializer(many=True)
-     contactNames=UsernameSerializer(many=True)
-     subtask=SubtaskSerializer(many=True)
+     letters=LettersSerializer(many=True,read_only=True)
+     contactNames=UsernameSerializer(many=True,read_only=True)
+     subtasks=SubtaskSerializer(many=True,read_only=True)
      class Meta:
         model = Task
-        fields = ('title','description','date','prio','created_at','category','progress','contactNames','letters','subtask')
+        fields = ('id','title','description','date','prio','created_at','category','progress','contactNames','letters','subtasks','color')
 
+     
+        
+           
