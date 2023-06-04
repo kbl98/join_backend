@@ -65,6 +65,13 @@ class Subtask(models.Model):
         return "{}:{}..".format(self.id, self.name,self.state)
     
 
+class Contact(models.Model):
+    name=models.CharField(max_length=100)
+    phone = models.CharField(blank=True,max_length=18)
+    email = models.EmailField(default="testmail@test.de")
+    color = models.CharField(max_length=7, default="#ffffff")
+    def __str__(self):
+        return "{}:{}..".format(self.id, self.name)
 
 class Task(models.Model):
     title = models.CharField(max_length=100)
@@ -74,18 +81,12 @@ class Task(models.Model):
     created_at = models.DateTimeField(default=datetime.today)
     category = models.CharField(max_length=100)
     progress = models.CharField(max_length=20,choices=PROGRESS_CHOICES, default='todo')
-    contactNames=models.ManyToManyField(users)
+    contactNames=models.ManyToManyField(Contact)
     letters=models.ManyToManyField(Letters,default='', blank=True,null=True )
     subtasks=models.ManyToManyField(Subtask,default='', blank=True,null=True)
     color=models.CharField(max_length=7, default="#ffffff")
     
-class Contact(models.Model):
-    name=models.CharField(max_length=100)
-    phone = models.CharField(blank=True,max_length=18)
-    email = models.EmailField(default="testmail@test.de")
-    color = models.CharField(max_length=7, default="#ffffff")
-    def __str__(self):
-        return "{}:{}..".format(self.id, self.name)
+
 
 
  
