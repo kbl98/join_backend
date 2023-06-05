@@ -48,6 +48,14 @@ class UserRegistrationView(APIView):
             return True
         return False   
      
+
+class NewPasswordView(APIView):
+    def post(self,request,format=None):
+        user=User.objects.get(email=request.data['email'])
+        user.set_password(request.data['password'])
+        user.save()
+
+
 class TaskView(APIView):
     """
     View to list all tasks in the system and create new task
@@ -235,8 +243,6 @@ class UsersView(APIView):
     """
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAdminUser]
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
         """
