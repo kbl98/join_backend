@@ -78,17 +78,17 @@ class TaskView(APIView):
         Creates new Task, contactNames are user-objects, subtasks are created as objects
         """
         data=request.data
-        print(data['date'])
         newTask = Task.objects.create(
             title=data['title'],description=data['description'],prio=data['prio'],date=data['date'],category=data['category'],progress=data['progress'],color=data['color'])
         print('nextStep')
         for contact in data['contactNames']:
             newCont=Contact.objects.get(name=contact['name'])
             newTask.contactNames.add(newCont)
-        for subtask in data['subtasks']:
-            newSubt=Subtask.objects.create(name=subtask['name'])
-            newTask.subtasks.add(newSubt)
-        newTask.save()
+        if 'subtasks' in data  and isinstance(data['subtasks'], list) and len(data['subtasks']) > 0:
+            for subtask in data['subtasks']:
+                newSubt=Subtask.objects.create(name=subtask['name'])
+                newTask.subtasks.add(newSubt)
+            newTask.save()
         serialized_Task=TaskSerializer(newTask)
         return Response(serialized_Task.data, status=status.HTTP_201_CREATED)
     
